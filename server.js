@@ -33,19 +33,24 @@ app.use(express.json({extended: false}));
 app.post('/signin', (req, res) => {    
 
     let found = false;
+    let foundUser = false;
 
     //const bodyPassword = md5(req.body.password + "SaltP4lWmxp2jX");
     const bodyPassword = req.body.password;
+    const bodyPasswordHashed = md5(req.body.password + "SaltP4lWmxp2jX");
 
     database.users.some((elem) => {
-        if (elem.email === req.body.email && bodyPassword === elem.password) {
+        if (elem.email === req.body.email && (bodyPassword === elem.password || bodyPasswordHashed === elem.password)) {
             found = true;
+            foundUser = {...elem};
             return true;
         }
     });
 
     if (found) {
-        res.json('success');
+        delete foundUser["password"];
+        res.json(foundUser);
+        //res.json('success');
     } else {
         res.status(400).json('error logging in');
     }
@@ -72,7 +77,11 @@ app.post('/register', (req, res) => {
         joined: new Date()
     });
 
-    res.json(database.users[database.users.length - 1]);
+    const returnedUser = {...database.users[database.users.length - 1]};
+
+    delete returnedUser["password"];
+
+    res.json(returnedUser);
 });
 
 //profile/:userId --> GET = user
