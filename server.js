@@ -10,27 +10,26 @@ const db = new databaseHandler();
 const app = express();
 app.use(cors());
 
-const database = {
-    users: [
-        {id: '123', name: 'John', email: 'john@gmail.com', password: 'cookies', entries: 0, joined: new Date()},
-        {id: '124', name: 'Sally', email: 'sally@gmail.com', password: 'bananas', entries: 0, joined: new Date()}
-    ],
-    login: [
-        {
-            id: '987',
-            hash: '',
-            email: 'john@gmail.com'
-        }
-    ]
-};
+app.use(express.json({extended: false}));
 
 // --> res = this is working
-app.get("/", (req, res) => {
-    console.log(process.env.databaseMode);
-    res.send(database.users);
-});
+app.get("/", async (req, res) => {
+    /*console.log(process.env.databaseMode);
+    res.send(database.users);*/
 
-app.use(express.json({extended: false}));
+    let foundDBUsers = null;
+
+    try {        
+        foundDBUsers = await db.getAllUsers();        
+    }
+    catch(err) {
+        console.error("getAllUserDBError", err);
+        res.status(400).json('could not get users');      
+        return;  
+    }
+            
+    res.json(foundDBUsers); 
+});
 
 ///signin --> POST = success/fail
 app.post('/signin', async (req, res) => {    

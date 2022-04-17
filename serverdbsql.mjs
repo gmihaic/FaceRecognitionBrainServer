@@ -23,6 +23,32 @@ export default class databaseSQLHandler {
         });
     }
 
+    getAllUsers() {                        
+        return new Promise((getUsersResolve) => {
+            try {
+                //fetch from users table by id
+                this.postgres
+                    .select("*")
+                    .from("users")                              
+                    .then((response) => {                            
+                        if (!response || response.length === 0) {
+                            getUsersResolve([]);
+                        } else {
+                            getUsersResolve(response);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error("getUserById", err);
+                        getUsersResolve(null);
+                    });                   
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getUsersResolve(null);
+            }             
+        });                    
+    }
+
     getUserById(id) {                        
         return new Promise((getUserResolve) => {
             try {

@@ -8,6 +8,10 @@ export default class databaseMongoDBHandler {
         //todo
     }
 
+    getAllUsers(id) {                        
+        //todo
+    }
+
     getUserById(id) {                        
         //todo
     }

@@ -20,6 +20,10 @@ export default class databaseHandler {
         }
     }
 
+    getAllUsers() {
+        return this.handler.getAllUsers();  
+    }
+
     getUserById(id) {        
         return this.handler.getUserById(id);       
     }
