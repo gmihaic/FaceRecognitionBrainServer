@@ -111,39 +111,46 @@ export default class databaseSQLHandler {
         return new Promise((insertUserResolve) => {
             try {
                 //insert into users table
-                this.postgres('users')
-                .returning("*")
-                .insert({
-                    email: email,
-                    name: name,
-                    joined: new Date()
-                })
-                .then((insertUserResponse) => {
-                    //console.log("dbResponseInsertUser", insertUserResponse);
 
-                    //if insert succesful, insert into login table
-                    this.postgres('login')
-                    .returning("*")
-                    .insert({
-                        email: email,
-                        hash: hashed_password
-                    })
-                    .then((loginResponse) => {
-                        //just log the login response
-                        //console.log("dbResponseInsertLogin", loginResponse);
-                        
-                        //the promise will resolve back to the API with only the user info, no login info
-                        insertUserResolve(insertUserResponse[0]);
-                    })
-                    .catch((err) => {
-                        console.error("dbInsertLoginError", err);
-                        insertUserResolve(null);
-                    })                        
-                })
-                .catch((err) => {
-                    console.error("dbInsertUserError", err);
-                    insertUserResolve(null);
+                this.postgres.transaction((trx) => {
+                    trx('users')
+                        .returning("*")
+                        .insert({
+                            email: email,
+                            name: name,
+                            joined: new Date()
+                        })
+                        .then((insertUserResponse) => {
+                            //console.log("dbResponseInsertUser", insertUserResponse);
+
+                            //if insert succesful, insert into login table
+                            trx('login')
+                            .returning("*")
+                            .insert({
+                                email: email,
+                                hash: hashed_password
+                            })
+                            .then((loginResponse) => {
+                                //just log the login response
+                                //console.log("dbResponseInsertLogin", loginResponse);
+                                
+                                //the promise will resolve back to the API with only the user info, no login info
+                                trx.commit();
+                                insertUserResolve(insertUserResponse[0]);
+                            })
+                            .catch((err) => {
+                                console.error("dbInsertLoginError", err);
+                                trx.rollback();
+                                insertUserResolve(null);
+                            })              
+                        })
+                        .catch((err) => {
+                            console.error("dbInsertUserError", err);
+                            trx.rollback();
+                            insertUserResolve(null);
+                        });
                 });
+                /**/     
             } 
             catch(err) {
                 console.error("dbError", err);
