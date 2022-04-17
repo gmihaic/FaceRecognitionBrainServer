@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import fs from "fs";
 import bcrypt from "bcrypt-nodejs";
-import md5 from "md5";
 import cors from "cors";
 import databaseHandler from "./serverdb.mjs";
 
@@ -34,7 +33,6 @@ app.get("/", (req, res) => {
 app.use(express.json({extended: false}));
 
 ///signin --> POST = success/fail
-
 app.post('/signin', async (req, res) => {    
 
     const {email, password} = req.body;
@@ -79,8 +77,7 @@ app.post('/register', async (req, res) => {
         res.status(400).json('error registering user');      
         return;
     }
-
-    //const hashed_password = md5(password + "SaltP4lWmxp2jX");
+    
     const hashed_password = bcrypt.hashSync(password);
 
     let insertedUser = null;

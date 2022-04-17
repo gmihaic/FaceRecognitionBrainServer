@@ -149,8 +149,7 @@ export default class databaseSQLHandler {
                             trx.rollback();
                             insertUserResolve(null);
                         });
-                });
-                /**/     
+                });                   
             } 
             catch(err) {
                 console.error("dbError", err);
