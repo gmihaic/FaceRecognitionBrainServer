@@ -50,6 +50,34 @@ export default class databaseSQLHandler {
         });                    
     }
 
+    getUserLogin(email) {                        
+        return new Promise((getUserResolve) => {
+            try {
+                //fetch from users table by id
+                this.postgres
+                    ("users as u")
+                    .join("login as l", "u.email", "l.email")
+                    .select("u.*", "l.hash")
+                    .where('u.email', '=', email) //escaped by knex                     
+                    .then((response) => {                                          
+                        if (!response || response.length === 0) {
+                            getUserResolve(null);
+                        } else {
+                            getUserResolve(response[0]);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error("getUserLoginDBError", err);
+                        getUserResolve(null);
+                    });                   
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getUserResolve(null);
+            }             
+        });                    
+    }
+
     increaseUserEntries(id) {                       
         return new Promise((incrEntriesResolve) => {
             try {

@@ -35,41 +35,50 @@ app.use(express.json({extended: false}));
 
 ///signin --> POST = success/fail
 
-app.post('/signin', (req, res) => {    
+app.post('/signin', async (req, res) => {    
 
-    let found = false;
-    let foundUser = false;
+    const {email, password} = req.body;
 
-    //const bodyPassword = md5(req.body.password + "SaltP4lWmxp2jX");
-    const bodyPassword = req.body.password;
-    const bodyPasswordHashed = md5(req.body.password + "SaltP4lWmxp2jX");
-
-    database.users.some((elem) => {
-        if (elem.email === req.body.email && (bodyPassword === elem.password || bodyPasswordHashed === elem.password)) {
-            found = true;
-            foundUser = {...elem};
-            return true;
-        }
-    });
-
-    if (found) {
-        delete foundUser["password"];
-        res.json(foundUser);
-        //res.json('success');
-    } else {
-        res.status(400).json('error logging in');
+    if (!email || email.length === 0 || !password || password.length === 0) {
+        res.status(400).json('could not sign in');      
+        return;
     }
 
-    /*if (req.body.email === database.users[0].email && md5(req.body.password + "SaltP4lWmxp2jX") === database.users[0].password) {
-        res.json('success');
-    } else {
-        res.status(400).json('error logging in');
-    }*/
+    let foundDBUser = null;
+
+    try {        
+        foundDBUser = await db.getUserLogin(email);        
+    }
+    catch(err) {
+        console.error("signInDbError", err);
+        res.status(400).json('could not sign in');      
+        return;  
+    }
+
+    if (foundDBUser === null) {
+        console.error(`not found in db ${email}`);
+        res.status(400).json('could not sign in');  
+        return;  
+    }
+
+    if (!bcrypt.compareSync(password, foundDBUser.hash)) {
+        console.error("Password does not match");
+        res.status(400).json('could not sign in');  
+        return; 
+    }
+    
+    delete foundDBUser["hash"];
+    res.json(foundDBUser);        
 });
 
 //register --> POST = user
 app.post('/register', async (req, res) => {    
     const {email, name, password} = req.body;
+
+    if (!email || email.length === 0 || !name || name.length === 0 || !password || password.length === 0) {
+        res.status(400).json('error registering user');      
+        return;
+    }
 
     //const hashed_password = md5(password + "SaltP4lWmxp2jX");
     const hashed_password = bcrypt.hashSync(password);

@@ -12,6 +12,10 @@ export default class databaseMongoDBHandler {
         //todo
     }
 
+    getUserLogin(email) {                        
+        //todo
+    }
+
     increaseUserEntries(id) {                       
         //todo
     }

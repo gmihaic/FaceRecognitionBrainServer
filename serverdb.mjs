@@ -24,6 +24,10 @@ export default class databaseHandler {
         return this.handler.getUserById(id);       
     }
 
+    getUserLogin(email) {
+        return this.handler.getUserLogin(email);
+    }
+
     increaseUserEntries(id) {
         return this.handler.increaseUserEntries(id);            
     }
