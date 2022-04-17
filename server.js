@@ -5,7 +5,6 @@ import bcrypt from "bcrypt-nodejs";
 import md5 from "md5";
 import cors from "cors";
 import databaseHandler from "./serverdb.mjs";
-import { hasUncaughtExceptionCaptureCallback } from "process";
 
 const db = new databaseHandler();
 
@@ -91,28 +90,17 @@ app.post('/register', async (req, res) => {
         return;  
     }
     
-    res.json(insertedUser);
-
-    /*database.users.push({
-        id: '125', 
-        name: name, 
-        email: email, 
-        password: hashed_password, 
-        entries: 0, 
-        joined: new Date()
-    });*/
-
-    /*const returnedUser = {...database.users[database.users.length - 1]};
-
-    delete returnedUser["password"];
-
-    res.json(returnedUser);*/
+    res.json(insertedUser);    
 });
 
 //profile/:userId --> GET = user
-
 app.get('/profile/:id', async (req, res) => {
     const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+        res.status(400).json('Invalid ID');       
+        return;  
+    }
    
     let foundUser = null;
 
@@ -134,21 +122,31 @@ app.get('/profile/:id', async (req, res) => {
 });
 
 //image --> PUT --> user
-app.put('/image', (req, res) => {
+app.put('/image', async (req, res) => {
     const { id } = req.body;
 
-    let found = false;
-    database.users.forEach((user) => {
-        if (user.id === id) {
-            found = true;
-            user.entries++;
-            return res.json(user.entries);
-        } 
-    });
-
-    if (!found) {
-        res.status(404).json('no such user');
+    if (!id || isNaN(id)) {
+        res.status(400).json('Invalid ID');       
+        return;  
     }
+
+    let updatedEntries = null;
+
+    try {        
+        updatedEntries = await db.increaseUserEntries(id);        
+    }
+    catch(err) {
+        console.error(err);
+        res.status(400).json('Could not update entries');      
+        return;  
+    }
+
+    if (updatedEntries === null) {
+        res.status(400).json('Could not update entries');       
+        return;  
+    }
+    
+    res.json(updatedEntries);    
 });
 
 app.listen(3610, () => {
