@@ -21,3 +21,6 @@ CREATE TABLE login(
     hash VARCHAR(100) NOT NULL,
     email text UNIQUE NOT NULL   
 );
+
+# MongoDB unique index on users.email
+db.users.createIndex( { "email": 1 }, { unique: true } )

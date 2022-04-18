@@ -5,17 +5,15 @@ import bcrypt from "bcrypt-nodejs";
 import cors from "cors";
 import databaseHandler from "./serverdb.mjs";
 
-const db = new databaseHandler();
-
 const app = express();
 app.use(cors());
 
 app.use(express.json({extended: false}));
 
+const db = new databaseHandler();
+
 // --> res = this is working
-app.get("/", async (req, res) => {
-    /*console.log(process.env.databaseMode);
-    res.send(database.users);*/
+app.get("/", async (req, res) => {        
 
     let foundDBUsers = null;
 
@@ -23,7 +21,7 @@ app.get("/", async (req, res) => {
         foundDBUsers = await db.getAllUsers();        
     }
     catch(err) {
-        console.error("getAllUserDBError", err);
+        console.error("getAllUserDBError", err);        
         res.status(400).json('could not get users');      
         return;  
     }
@@ -102,7 +100,7 @@ app.post('/register', async (req, res) => {
 app.get('/profile/:id', async (req, res) => {
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id) {
         res.status(400).json('Invalid ID');       
         return;  
     }
@@ -130,7 +128,7 @@ app.get('/profile/:id', async (req, res) => {
 app.put('/image', async (req, res) => {
     const { id } = req.body;
 
-    if (!id || isNaN(id)) {
+    if (!id) {
         res.status(400).json('Invalid ID');       
         return;  
     }
