@@ -16,12 +16,12 @@ export default class databaseMongoDBHandler {
         this.mongo = new MongoClient(process.env.mongoConnectionString);
 
         try{           
-            await this.mongo.connect((err, db) => {            
+            await this.mongo.connect((err) => {            
                 if (err) {
-                    throw err;
-                }                                
+                    process.exit(0);
+                }                         
             });
-
+           
             this.mongodb = this.mongo.db("smartbrain");
             this.mongodbCollection = this.mongodb.collection('users');
         }
