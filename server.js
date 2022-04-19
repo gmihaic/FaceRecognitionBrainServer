@@ -154,9 +154,9 @@ app.put('/image', async (req, res) => {
 });
 
 //recogniseImage/:imageURL --> GET = image parsed data
-app.get('/recogniseImage/:imageURL', async (req, res) => {
-    const { imageURL } = req.params;
-
+app.post('/recogniseImage', async (req, res) => {
+    const { imageURL } = req.body;
+   
     if (!imageURL || (imageURL.substr(0, 7) != "http://" && imageURL.substr(0, 8) != "https://")) {
         res.status(400).json('Invalid image URL');       
         return;  
