@@ -4,6 +4,7 @@ import fs from "fs";
 import bcrypt from "bcrypt-nodejs";
 import cors from "cors";
 import databaseHandler from "./serverdb.mjs";
+import { ClarifaiStub, grpc } from "clarifai-nodejs-grpc";
 
 const app = express();
 app.use(cors());
@@ -150,6 +151,63 @@ app.put('/image', async (req, res) => {
     }
     
     res.json(updatedEntries);    
+});
+
+//recogniseImage/:imageURL --> GET = image parsed data
+app.get('/recogniseImage/:imageURL', async (req, res) => {
+    const { imageURL } = req.params;
+
+    if (!imageURL || (imageURL.substr(0, 7) != "http://" && imageURL.substr(0, 8) != "https://")) {
+        res.status(400).json('Invalid image URL');       
+        return;  
+    }
+
+    const stub = ClarifaiStub.grpc();
+
+    const metadata = new grpc.Metadata();
+    metadata.set("authorization", `Key ${process.env.ClarifaiAPIKey}`);
+    
+    stub.PostModelOutputs(
+        {            
+            // This is the model ID of a publicly available General model. You may use any other public or custom model ID.
+            model_id: "face-detection",
+            inputs: [{data: {image: {url: imageURL}}}]
+        },
+        metadata,
+        (err, response) => {
+            if (err) {
+                res.status(400).json('Error parsing image URL');       
+                return;  
+            }
+    
+            if (response.status.code !== 10000) {
+                console.error("Received failed status: " + response.status.description + "\n" + response.status.details);
+                res.status(400).json('Error parsing image URL');                       
+                return;
+            }
+                
+            res.json(response.outputs[0].data.regions[0].region_info.bounding_box);            
+        }
+    );
+
+    /*   
+    let foundUser = null;
+
+    try {        
+        foundUser = await db.getUserById(id);        
+    }
+    catch(err) {
+        console.error(err);
+        res.status(400).json('User not found');      
+        return;  
+    }
+
+    if (foundUser === null) {
+        res.status(400).json('User not found');       
+        return;  
+    }*/
+    
+    //res.json(imageURL);    
 });
 
 app.listen(3610, () => {
