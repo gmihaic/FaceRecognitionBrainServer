@@ -188,26 +188,7 @@ app.post('/recogniseImage', async (req, res) => {
                 
             res.json(response.outputs[0].data.regions[0].region_info.bounding_box);            
         }
-    );
-
-    /*   
-    let foundUser = null;
-
-    try {        
-        foundUser = await db.getUserById(id);        
-    }
-    catch(err) {
-        console.error(err);
-        res.status(400).json('User not found');      
-        return;  
-    }
-
-    if (foundUser === null) {
-        res.status(400).json('User not found');       
-        return;  
-    }*/
-    
-    //res.json(imageURL);    
+    );           
 });
 
 app.listen(3610, () => {
