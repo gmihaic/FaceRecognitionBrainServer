@@ -23,7 +23,7 @@ app.get("/", async (req, res) => {
     }
     catch(err) {
         console.error("getAllUserDBError", err);        
-        res.status(400).json('could not get users');      
+        res.status(400).json({'error': 'db_error'});      
         return;  
     }
             
@@ -36,7 +36,7 @@ app.post('/signin', async (req, res) => {
     const {email, password} = req.body;
 
     if (!email || email.length === 0 || !password || password.length === 0) {
-        res.status(400).json('could not sign in');      
+        res.status(400).json({'error': 'invalid_params'});      
         return;
     }
 
@@ -47,19 +47,19 @@ app.post('/signin', async (req, res) => {
     }
     catch(err) {
         console.error("signInDbError", err);
-        res.status(400).json('could not sign in');      
+        res.status(400).json({'error': 'db_error'});      
         return;  
     }
 
     if (foundDBUser === null) {
         console.error(`not found in db ${email}`);
-        res.status(400).json('could not sign in');  
+        res.status(400).json({'error': 'login_error'});  
         return;  
     }
 
     if (!bcrypt.compareSync(password, foundDBUser.hash)) {
         console.error("Password does not match");
-        res.status(400).json('could not sign in');  
+        res.status(400).json({'error': 'db_login_error'});  
         return; 
     }
     
@@ -85,12 +85,12 @@ app.post('/register', async (req, res) => {
     }
     catch(err) {
         console.error(err);
-        res.status(400).json('error registering user');      
+        res.status(400).json({'error': 'db_error'});      
         return;  
     }
 
     if (insertedUser === null) {
-        res.status(400).json('error registering user');  
+        res.status(400).json({'error': 'register_error'});  
         return;  
     }
     
@@ -102,7 +102,7 @@ app.get('/profile/:id', async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-        res.status(400).json('Invalid ID');       
+        res.status(400).json({'error': 'invalid_params'});       
         return;  
     }
    
@@ -113,12 +113,12 @@ app.get('/profile/:id', async (req, res) => {
     }
     catch(err) {
         console.error(err);
-        res.status(400).json('User not found');      
+        res.status(400).json({'error': 'db_error'});      
         return;  
     }
 
-    if (foundUser === null) {
-        res.status(400).json('User not found');       
+    if (foundUser === null) {            
+        res.json(null);
         return;  
     }
     
@@ -130,7 +130,7 @@ app.put('/image', async (req, res) => {
     const { id } = req.body;
 
     if (!id) {
-        res.status(400).json('Invalid ID');       
+        res.status(400).json({'error': 'invalid_params'});       
         return;  
     }
 
@@ -141,12 +141,12 @@ app.put('/image', async (req, res) => {
     }
     catch(err) {
         console.error(err);
-        res.status(400).json('Could not update entries');      
+        res.status(400).json({'error': 'db_error'});      
         return;  
     }
 
     if (updatedEntries === null) {
-        res.status(400).json('Could not update entries');       
+        res.status(400).json({'error': 'db_error'});       
         return;  
     }
     
@@ -158,7 +158,7 @@ app.post('/recogniseImage', async (req, res) => {
     const { imageURL } = req.body;
    
     if (!imageURL || (imageURL.substr(0, 7) != "http://" && imageURL.substr(0, 8) != "https://")) {
-        res.status(400).json('Invalid image URL');       
+        res.status(400).json({'error': 'invalid_params'});       
         return;  
     }
 
@@ -176,13 +176,13 @@ app.post('/recogniseImage', async (req, res) => {
         metadata,
         (err, response) => {
             if (err) {
-                res.status(400).json('Error parsing image URL');       
+                res.status(400).json({'error': 'detect_error'});       
                 return;  
             }
     
             if (response.status.code !== 10000) {
                 console.error("Received failed status: " + response.status.description + "\n" + response.status.details);
-                res.status(400).json('Error parsing image URL');                       
+                res.status(400).json({'error': 'detect_error'});                       
                 return;
             }
                 

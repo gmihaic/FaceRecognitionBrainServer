@@ -22,5 +22,22 @@ CREATE TABLE login(
     email text UNIQUE NOT NULL   
 );
 
+ALTER TABLE users ADD COLUMN country VARCHAR(100) NULL DEFAULT NULL;
+
+CREATE TABLE image_detections(
+    detect_id serial PRIMARY KEY,
+    user_id BIGINT REFERENCES users (id),
+    image_url text NOT NULL,    
+    date TIMESTAMP
+);
+
+CREATE INDEX ON image_detections(date);
+
+ALTER TABLE image_detections ADD COLUMN detections BIGINT DEFAULT 0;
+
+
 # MongoDB unique index on users.email
-db.users.createIndex( { "email": 1 }, { unique: true } )
+db.users.createIndex( { "email": 1 }, { unique: true } );
+
+db.image_detections.createIndex({"user_id": 1, "last_update": -1});
+db.image_detections.createIndex({"last_update": -1});
