@@ -21,13 +21,14 @@
   },
   "homepage": "https://github.com/gmihaic/FaceRecognitionBrainServer#readme",
   "dependencies": {
-    "bcrypt-nodejs": "^0.0.3",
+    "bcrypt": "^5.0.1",
     "clarifai-nodejs-grpc": "^8.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "knex": "^1.0.7",
     "mongodb": "^4.5.0",
+    "node-email-validation": "^1.0.4",
     "pg": "^8.7.3"
   },
   "devDependencies": {

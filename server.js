@@ -1,10 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import fs from "fs";
-import bcrypt from "bcrypt-nodejs";
 import cors from "cors";
 import databaseHandler from "./serverdb.mjs";
 import { ClarifaiStub, grpc } from "clarifai-nodejs-grpc";
+import {is_email_valid} from 'node-email-validation';
+import bcrypt from "bcrypt";
 
 const app = express();
 app.use(cors());
@@ -56,7 +57,7 @@ app.post('/signin', async (req, res) => {
         res.status(400).json({'error': 'login_error'});  
         return;  
     }
-
+    
     if (!bcrypt.compareSync(password, foundDBUser.hash)) {
         console.error("Password does not match");
         res.status(400).json({'error': 'db_login_error'});  
@@ -69,19 +70,19 @@ app.post('/signin', async (req, res) => {
 
 //register --> POST = user
 app.post('/register', async (req, res) => {    
-    const {email, name, password} = req.body;
+    const {email, name, password, country} = req.body;
 
-    if (!email || email.length === 0 || !name || name.length === 0 || !password || password.length === 0) {
-        res.status(400).json('error registering user');      
+    if (!email || email.length === 0 || !is_email_valid(email) || !name || name.length === 0 || !password || password.length < 8 || !country || country.length < 2) {
+        res.status(400).json({'error': 'invalid_params'});      
         return;
     }
-    
-    const hashed_password = bcrypt.hashSync(password);
+           
+    const hashed_password = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 
     let insertedUser = null;
 
     try {        
-        insertedUser = await db.insertUser(email, name, hashed_password);        
+        insertedUser = await db.insertUser(email, name, hashed_password, country);        
     }
     catch(err) {
         console.error(err);

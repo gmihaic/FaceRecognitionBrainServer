@@ -36,7 +36,7 @@ export default class databaseHandler {
         return this.handler.increaseUserEntries(id);            
     }
    
-    insertUser(email, name, hashed_password) {
-        return this.handler.insertUser(email, name, hashed_password);   
+    insertUser(email, name, hashed_password, country) {
+        return this.handler.insertUser(email, name, hashed_password, country);   
     }       
 };

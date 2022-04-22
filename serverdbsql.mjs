@@ -133,7 +133,7 @@ export default class databaseSQLHandler {
         });                    
     }
 
-    insertUser(email, name, hashed_password) {       
+    insertUser(email, name, hashed_password, country) {       
         return new Promise((insertUserResolve) => {
             try {
                 //insert into users table
@@ -144,6 +144,7 @@ export default class databaseSQLHandler {
                         .insert({
                             email: email,
                             name: name,
+                            country: country,
                             joined: new Date()
                         })
                         .then((insertUserResponse) => {

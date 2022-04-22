@@ -40,6 +40,7 @@ export default class databaseMongoDBHandler {
                     "_id": 1,
                     "name": 1,
                     "email": 1,
+                    "country": 1,
                     "entries": 1,
                     "joined": 1
                 };
@@ -79,6 +80,7 @@ export default class databaseMongoDBHandler {
                     "_id": 1,
                     "name": 1,
                     "email": 1,
+                    "country": 1,
                     "entries": 1,
                     "joined": 1
                 };
@@ -170,14 +172,15 @@ export default class databaseMongoDBHandler {
         }); 
     }
 
-    insertUser(email, name, hashed_password) {       
+    insertUser(email, name, hashed_password, country) {       
         return new Promise((insertUserResolve) => {
             try {                
                 const insertObject = {
                     "email": email,
                     "name": name,
                     "hash": hashed_password,
-                    "entries": 0,
+                    "country": country,
+                    "entries": 0,                    
                     "joined": new Date()              
                 };
                                 
