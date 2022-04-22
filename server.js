@@ -129,9 +129,17 @@ app.get('/profile/:id', async (req, res) => {
 
 //image --> PUT --> user
 app.put('/image', async (req, res) => {
-    const { id } = req.body;
+    const { id, imageURL } = req.body;
 
-    if (!id) {
+    if (!id || !imageURL) {
+        res.status(400).json({'error': 'invalid_params'});       
+        return;  
+    }
+
+    try {
+        new URL(imageURL);        
+    } 
+    catch (err) {
         res.status(400).json({'error': 'invalid_params'});       
         return;  
     }
@@ -139,7 +147,7 @@ app.put('/image', async (req, res) => {
     let updatedEntries = null;
 
     try {        
-        updatedEntries = await db.increaseUserEntries(id);        
+        updatedEntries = await db.increaseUserEntries(id, imageURL);        
     }
     catch(err) {
         console.error(err);

@@ -35,9 +35,10 @@ CREATE INDEX ON image_detections(date);
 
 ALTER TABLE image_detections ADD COLUMN detections BIGINT DEFAULT 0;
 
+ALTER TABLE image_detections ADD COLUMN detect_type VARCHAR(20) DEFAULT 'face';
 
 # MongoDB unique index on users.email
 db.users.createIndex( { "email": 1 }, { unique: true } );
 
-db.image_detections.createIndex({"user_id": 1, "last_update": -1});
-db.image_detections.createIndex({"last_update": -1});
+db.image_detections.createIndex({"user_id": 1, "date": -1});
+db.image_detections.createIndex({"date": -1});

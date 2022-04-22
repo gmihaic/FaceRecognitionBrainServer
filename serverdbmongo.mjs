@@ -4,6 +4,7 @@ export default class databaseMongoDBHandler {
         this.mongo = null;   //connection  
         this.mongodb = null;     //database
         this.mongodbCollection = null;     //collection
+        this.mongodbDetectionsCollection = null;     //collection
 
         this.connect();
     }
@@ -24,6 +25,7 @@ export default class databaseMongoDBHandler {
            
             this.mongodb = this.mongo.db("smartbrain");
             this.mongodbCollection = this.mongodb.collection('users');
+            this.mongodbDetectionsCollection = this.mongodb.collection('image_detections');
         }
         catch(err) {
             console.error("mongoDB connection error", err);
@@ -143,7 +145,7 @@ export default class databaseMongoDBHandler {
         });                
     }
 
-    increaseUserEntries(id) {                       
+    increaseUserEntries(id, imageURL) {                       
         return new Promise((updateEntriesResolve) => {
             try {           
                 
@@ -155,14 +157,39 @@ export default class databaseMongoDBHandler {
                     "$inc": {"entries": 1}                         
                 };
                                 
+                //update the count for the user
                 this.mongodbCollection.findOneAndUpdate(updateConditions, updateObject, { returnDocument: "after" }, (err, result) => {
                     if (err) {
                         console.log(err);
                         updateEntriesResolve(null);
                         return;
                     }
-                                      
-                    updateEntriesResolve(result.value.entries);
+
+                    //upsert into detections collection        
+                    const updatedEntries = result.value.entries;
+
+                    const upsertDetectionConditionObject = {
+                        "user_id": id,
+                        "image_url": imageURL
+                    };
+
+                    const upsertDetectionUpdateObject = {
+                        "$set": {
+                            "date": new Date(),
+                            "detect_type": "face"                            
+                        },
+                        "$inc": {detections: 1}
+                    };
+                              
+                    this.mongodbDetectionsCollection.update(upsertDetectionConditionObject, upsertDetectionUpdateObject, {"upsert": true}, (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            updateEntriesResolve(null);
+                            return;
+                        }                      
+
+                        updateEntriesResolve(updatedEntries);
+                    });                                                          
                 });                       
             } 
             catch(err) {

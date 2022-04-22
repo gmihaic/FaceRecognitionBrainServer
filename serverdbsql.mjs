@@ -104,10 +104,10 @@ export default class databaseSQLHandler {
         });                    
     }
 
-    increaseUserEntries(id) {                       
+    increaseUserEntries(id, imageURL) {                       
         return new Promise((incrEntriesResolve) => {
-            try {
-                //fetch from users table by id
+            try {                              
+                //increase user entries
                 this.postgres("users")
                     .returning("*")
                     .where('id', '=', parseInt(id))                              
@@ -117,14 +117,73 @@ export default class databaseSQLHandler {
                     .then((response) => {                                 
                         if (!response || response.length == 0) {
                             incrEntriesResolve(null);
-                        } else {                                
-                            incrEntriesResolve(response[0].entries);
+                        } else {                  
+                            
+                            const newEntries = response[0].entries;
+
+                            //check to insert or update image detection entry
+                            this.postgres("image_detections as idts")                               
+                                .select("idts.*")
+                                .where('idts.user_id', '=', id) //escaped by knex         
+                                .where('idts.image_url', '=', imageURL) //escaped by knex                
+                                .then((response) => {    
+                                    
+                                    if (!response) {                                        
+                                        incrEntriesResolve(null);
+                                    }
+
+                                    if (response.length === 0) {
+                                        //insert the image detection data
+                                        this.postgres("image_detections")
+                                            .returning("*")
+                                            .insert({
+                                                user_id: id,
+                                                image_url: imageURL,
+                                                date: new Date(),
+                                                detect_type: "face",
+                                                detections: 1
+                                            })
+                                            .then((insertResponse) => {                                                
+                                                incrEntriesResolve(newEntries);
+                                            })
+                                            .catch((err) => {
+                                                console.error("insertUserImageDetectionEntryError", err);
+                                                incrEntriesResolve(null);
+                                            })              
+                                    } else {
+                                        //update the image update entry
+                                        this.postgres("image_detections")
+                                            .returning("*")
+                                            .where('user_id', '=', parseInt(id))
+                                            .where('image_url', '=', imageURL)                              
+                                            .update({
+                                                detections: this.postgres.raw('?? + 1', ['detections']),
+                                                date: new Date(),
+                                                detect_type: "face"
+                                            }) 
+                                            .then((updateResponse) => {                                                
+                                                incrEntriesResolve(newEntries);
+                                            })
+                                            .catch((err) => {
+                                                console.error("insertUserImageDetectionEntryError", err);
+                                                incrEntriesResolve(null);
+                                            })         
+                                    }
+                                })
+                                .catch((err) => {
+                                    console.error("insertUserImageDetectionEntryError", err);
+                                    incrEntriesResolve(null);
+                                });
+                            
+                            
+                            //todo move 
+                            //incrEntriesResolve(response[0].entries);
                         }
                     })
                     .catch((err) => {
                         console.error("incrUserEntries", err);
                         incrEntriesResolve(null);
-                    });                   
+                    });
             } 
             catch(err) {
                 console.error("dbError", err);
