@@ -6,6 +6,7 @@ import databaseHandler from "./serverdb.mjs";
 import { ClarifaiStub, grpc } from "clarifai-nodejs-grpc";
 import {is_email_valid} from 'node-email-validation';
 import bcrypt from "bcrypt";
+import {URL} from "url";
 
 const app = express();
 app.use(cors());
@@ -158,7 +159,15 @@ app.put('/image', async (req, res) => {
 app.post('/recogniseImage', async (req, res) => {
     const { imageURL } = req.body;
    
-    if (!imageURL || (imageURL.substr(0, 7) != "http://" && imageURL.substr(0, 8) != "https://")) {
+    if (!imageURL) {
+        res.status(400).json({'error': 'invalid_params'});       
+        return;  
+    }
+
+    try {
+        new URL(imageURL);        
+    } 
+    catch (err) {
         res.status(400).json({'error': 'invalid_params'});       
         return;  
     }
