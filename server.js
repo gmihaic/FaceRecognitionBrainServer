@@ -53,12 +53,12 @@ app.post('/signin', async (req, res) => {
         return;  
     }
 
-    if (foundDBUser === null) {
+    if (foundDBUser === null || !foundDBUser.hash) {
         console.error(`not found in db ${email}`);
         res.status(400).json({'error': 'login_error'});  
         return;  
     }
-    
+        
     if (!bcrypt.compareSync(password, foundDBUser.hash)) {
         console.error("Password does not match");
         res.status(400).json({'error': 'db_login_error'});  
