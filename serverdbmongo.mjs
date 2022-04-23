@@ -182,14 +182,18 @@ export default class databaseMongoDBHandler {
         });                
     }    
 
-    _getLatestImageDetection = (timestamp) => {
+    _getLatestImageDetection = (timestamp, user_id) => {
         return new Promise((getLatestImageDetectionResolve) => {
             try {                
                 const query = {};
              
                 if (timestamp) {
                     query.date = {"$gt": new Date(Number(timestamp))};
-                }                
+                }            
+                
+                if (user_id) {
+                    query.user_id = {"$nin": [user_id]}
+                }
 
                 const selectFields = {
                     "_id": 1,
@@ -224,12 +228,12 @@ export default class databaseMongoDBHandler {
         });
     }
 
-    async getLatestImage(timestamp) {          
+    async getLatestImage(timestamp, user_id) {          
         
         let latestImage = null;
         
         try {                        
-            const latestImageData = await this._getLatestImageDetection(timestamp);        
+            const latestImageData = await this._getLatestImageDetection(timestamp, user_id);        
             
             if (!latestImageData || !latestImageData.user_id) {
                 throw "Not found";

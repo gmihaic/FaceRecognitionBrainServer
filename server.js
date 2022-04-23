@@ -128,13 +128,13 @@ app.get('/profile/:id', async (req, res) => {
 });
 
 //profile/:userId --> GET = user
-app.get('/latestimage/:timestamp?', async (req, res) => {
-    const { timestamp } = req.params;
+app.get('/latestimage/:timestamp?/:user_id?', async (req, res) => {
+    const { timestamp, user_id } = req.params;
            
     let foundImage = null;
     
     try {        
-        foundImage = await db.getLatestImage(timestamp);        
+        foundImage = await db.getLatestImage(timestamp, user_id);        
     }
     catch(err) {
         console.error(err);

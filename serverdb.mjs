@@ -28,8 +28,8 @@ export default class databaseHandler {
         return this.handler.getUserById(id);       
     }
 
-    getLatestImage(timestamp) {        
-        return this.handler.getLatestImage(timestamp);       
+    getLatestImage(timestamp, user_id) {        
+        return this.handler.getLatestImage(timestamp, user_id);       
     }
 
     getUserLogin(email) {

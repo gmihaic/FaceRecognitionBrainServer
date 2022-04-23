@@ -104,7 +104,7 @@ export default class databaseSQLHandler {
         });                    
     }
 
-    _getLatestImageDetection = (timestamp) => {
+    _getLatestImageDetection = (timestamp, user_id) => {
 
         return new Promise((getLatestImageDetectionResolve) => {
             try {               
@@ -116,8 +116,12 @@ export default class databaseSQLHandler {
                     .limit(1);
 
                 if (timestamp) {
-                    queryObj.where('idt.date', '>', new Date(Number(timestamp))) //escaped by knex             
+                    queryObj.where('idt.date', '>', new Date(Number(timestamp))); //escaped by knex             
                 }    
+
+                if (user_id) {
+                    queryObj.where('idt.user_id', '!=', user_id); //escaped by knex      
+                }
                                                                                     
                 queryObj.then((response) => {                                          
                         if (!response || response.length === 0) {
@@ -138,12 +142,12 @@ export default class databaseSQLHandler {
         });        
     }
 
-    async getLatestImage(timestamp) {    
+    async getLatestImage(timestamp, user_id) {    
         
         let latestImage = null;
         
         try {                        
-            const latestImageData = await this._getLatestImageDetection(timestamp);        
+            const latestImageData = await this._getLatestImageDetection(timestamp, user_id);        
             
             if (!latestImageData || !latestImageData.user_id) {
                 throw "Not found";
