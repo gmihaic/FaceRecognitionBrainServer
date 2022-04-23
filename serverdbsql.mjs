@@ -172,6 +172,58 @@ export default class databaseSQLHandler {
         return new Promise((getImageResolve) => {
             getImageResolve(latestImage);         
         });                                 
+    }   
+    
+    _getTopImagesForUser = (user_id, limit) => {
+
+        return new Promise((getTopUserImagesResolve) => {
+            try {               
+                const queryObj = this.postgres
+                    ("image_detections as idt")
+                    .join("users as u", "idt.user_id", "u.id")
+                    .where('idt.user_id', '=', user_id) //escaped by knex      
+                    .select("idt.*", "u.*")
+                    .orderBy("detections", "desc")
+                    .orderBy("date", "desc")
+                    .limit(Number(limit));
+                                                                                                   
+                queryObj.then((response) => {                                          
+                        if (!response || response.length === 0) {
+                            getTopUserImagesResolve(null);
+                        } else {
+                            getTopUserImagesResolve(response);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        getTopUserImagesResolve(null);
+                    });                   
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getTopUserImagesResolve(null);
+            }             
+        });        
+    }
+
+    async getTopForUser(user_id, limit) {    
+        
+        let topImagesDB = null;
+        
+        try {                        
+            topImagesDB = await this._getTopImagesForUser(user_id, limit);        
+            
+            if (!topImagesDB || topImagesDB.length === 0) {
+                throw "Not found";
+            }                      
+        } 
+        catch(err) {            
+            topImagesDB = null;
+        }
+
+        return new Promise((getTopImagesResolve) => {
+            getTopImagesResolve(topImagesDB);         
+        });                                 
     }    
 
     increaseUserEntries(id, imageURL, detectData) {                       

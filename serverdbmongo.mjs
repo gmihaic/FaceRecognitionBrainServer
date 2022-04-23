@@ -251,7 +251,65 @@ export default class databaseMongoDBHandler {
         return new Promise((getImageResolve) => {
             getImageResolve(latestImage);         
         });               
+    }
+
+    _getTopImagesForUser = (user_id, limit) => {
+        return new Promise((getTopUserImagesResolve) => {
+            try {                
+                const query = {"user_id": user_id};                             
+
+                const selectFields = {
+                    "_id": 1,
+                    "image_url": 1,
+                    "user_id": 1,
+                    "date": 1,
+                    "detect_data": 1,
+                    "detect_type": 1,
+                    "detections": 1
+                };
+                
+                this.mongodbDetectionsCollection.find(query)
+                                                .project(selectFields)
+                                                .sort({detections: -1, date: -1})
+                                                .limit(Number(limit))
+                                                .toArray((err, result) => {
+                    if (err) {
+                        console.log(err);                       
+                    }
+                    
+                    if (err || !result || result.length === 0) {
+                        getTopUserImagesResolve(null);
+                    } else {                                                           
+                        getTopUserImagesResolve(result);
+                    }                    
+                  });               
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getTopUserImagesResolve(null);
+            }             
+        });
     }    
+    
+    async getTopForUser(user_id, limit) {    
+        
+        let topImagesDB = null;
+        
+        try {                        
+            topImagesDB = await this._getTopImagesForUser(user_id, limit);        
+            
+            if (!topImagesDB || topImagesDB.length === 0) {
+                throw "Not found";
+            }                      
+        } 
+        catch(err) {            
+            topImagesDB = null;
+        }
+
+        return new Promise((getTopImagesResolve) => {
+            getTopImagesResolve(topImagesDB);         
+        });                                 
+    }     
 
     increaseUserEntries(id, imageURL, detectData) {                       
         return new Promise((updateEntriesResolve) => {

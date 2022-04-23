@@ -32,6 +32,10 @@ export default class databaseHandler {
         return this.handler.getLatestImage(timestamp, user_id);       
     }
 
+    getTopForUser(user_id, limit) {
+        return this.handler.getTopForUser(user_id, limit);    
+    }
+
     getUserLogin(email) {
         return this.handler.getUserLogin(email);
     }
