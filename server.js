@@ -127,17 +127,60 @@ app.get('/profile/:id', async (req, res) => {
     res.json(foundUser);    
 });
 
+//profile/:userId --> GET = user
+app.get('/latestimage/:timestamp?', async (req, res) => {
+    const { timestamp } = req.params;
+           
+    let foundImage = null;
+    
+    try {        
+        foundImage = await db.getLatestImage(timestamp);        
+    }
+    catch(err) {
+        console.error(err);
+        res.status(400).json({'error': 'db_error'});      
+        return;  
+    }
+   
+    if (foundImage === null) {            
+        res.json(null);
+        return;  
+    }
+
+    if (typeof(foundImage.detect_data) === "string") {
+        foundImage.detect_data = JSON.parse(foundImage.detect_data);
+    }
+
+    const retImage = {
+        "image_url": foundImage.image_url,
+        "date": foundImage.date,
+        "detect_data": foundImage.detect_data,
+        "detect_type": foundImage.detect_type,
+        "detections": foundImage.detections,
+        "user": {
+            "name": foundImage.user.name,
+            "country": foundImage.user.country
+        }
+    };
+    
+    res.json(retImage);    
+});
+
 //image --> PUT --> user
 app.put('/image', async (req, res) => {
-    const { id, imageURL } = req.body;
+    const { id, imageURL, detectData } = req.body;
 
-    if (!id || !imageURL) {
+    if (!id || !imageURL || !detectData) {
         res.status(400).json({'error': 'invalid_params'});       
         return;  
     }
 
     try {
-        new URL(imageURL);        
+        new URL(imageURL);  
+                
+        if (!detectData.top_row) {
+            throw "Invalid detect data";
+        }
     } 
     catch (err) {
         res.status(400).json({'error': 'invalid_params'});       
@@ -147,7 +190,7 @@ app.put('/image', async (req, res) => {
     let updatedEntries = null;
 
     try {        
-        updatedEntries = await db.increaseUserEntries(id, imageURL);        
+        updatedEntries = await db.increaseUserEntries(id, imageURL, detectData);        
     }
     catch(err) {
         console.error(err);

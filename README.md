@@ -37,6 +37,8 @@ ALTER TABLE image_detections ADD COLUMN detections BIGINT DEFAULT 0;
 
 ALTER TABLE image_detections ADD COLUMN detect_type VARCHAR(20) DEFAULT 'face';
 
+ALTER TABLE image_detections ADD COLUMN detect_data TEXT NOT NULL;
+
 # MongoDB unique index on users.email
 db.users.createIndex( { "email": 1 }, { unique: true } );
 

@@ -28,12 +28,16 @@ export default class databaseHandler {
         return this.handler.getUserById(id);       
     }
 
+    getLatestImage(timestamp) {        
+        return this.handler.getLatestImage(timestamp);       
+    }
+
     getUserLogin(email) {
         return this.handler.getUserLogin(email);
     }
 
-    increaseUserEntries(id, imageURL) {
-        return this.handler.increaseUserEntries(id, imageURL);            
+    increaseUserEntries(id, imageURL, detectData) {
+        return this.handler.increaseUserEntries(id, imageURL, detectData);            
     }
    
     insertUser(email, name, hashed_password, country) {

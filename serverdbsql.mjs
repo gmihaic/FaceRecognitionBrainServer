@@ -104,7 +104,73 @@ export default class databaseSQLHandler {
         });                    
     }
 
-    increaseUserEntries(id, imageURL) {                       
+    _getLatestImageDetection = (timestamp) => {
+
+        return new Promise((getLatestImageDetectionResolve) => {
+            try {               
+                const queryObj = this.postgres
+                    ("image_detections as idt")
+                    .join("users as u", "idt.user_id", "u.id")
+                    .select("idt.*", "u.*")
+                    .orderBy("date", "desc")
+                    .limit(1);
+
+                if (timestamp) {
+                    queryObj.where('idt.date', '>', new Date(Number(timestamp))) //escaped by knex             
+                }    
+                                                                                    
+                queryObj.then((response) => {                                          
+                        if (!response || response.length === 0) {
+                            getLatestImageDetectionResolve(null);
+                        } else {
+                            getLatestImageDetectionResolve(response[0]);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        getLatestImageDetectionResolve(null);
+                    });                   
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getLatestImageDetectionResolve(null);
+            }             
+        });        
+    }
+
+    async getLatestImage(timestamp) {    
+        
+        let latestImage = null;
+        
+        try {                        
+            const latestImageData = await this._getLatestImageDetection(timestamp);        
+            
+            if (!latestImageData || !latestImageData.user_id) {
+                throw "Not found";
+            }
+           
+            latestImage = latestImageData;
+
+            const userDataKeys = ["email", "country", "name", "user_id"];
+            const imageUser = {};
+
+            userDataKeys.forEach((elem) => {
+                imageUser[elem] = latestImage[elem];
+                delete latestImage[elem];
+            });
+
+            latestImage["user"] = imageUser;
+        } 
+        catch(err) {            
+            latestImage = null;
+        }
+
+        return new Promise((getImageResolve) => {
+            getImageResolve(latestImage);         
+        });                                 
+    }    
+
+    increaseUserEntries(id, imageURL, detectData) {                       
         return new Promise((incrEntriesResolve) => {
             try {                              
                 //increase user entries
@@ -141,6 +207,7 @@ export default class databaseSQLHandler {
                                                 image_url: imageURL,
                                                 date: new Date(),
                                                 detect_type: "face",
+                                                detect_data: JSON.stringify(detectData),
                                                 detections: 1
                                             })
                                             .then((insertResponse) => {                                                

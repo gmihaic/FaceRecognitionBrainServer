@@ -145,7 +145,111 @@ export default class databaseMongoDBHandler {
         });                
     }
 
-    increaseUserEntries(id, imageURL) {                       
+    _getUserData(id) {                        
+        return new Promise((getUserDataResolve) => {
+            try {               
+                const query = {
+                    "_id": ObjectId(id)
+                };
+
+                const selectFields = {
+                    "_id": 1,
+                    "name": 1,
+                    "email": 1,
+                    "country": 1,
+                    "entries": 1,
+                    "joined": 1
+                };
+                
+                this.mongodbCollection.find(query).project(selectFields).toArray((err, result) => {
+                    if (err) {
+                        console.log(err);                        
+                    }
+                    
+                    if (err || !result || result.length === 0) {
+                        getUserDataResolve([]);
+                    } else {
+                        const returnObj = result[0];
+                        returnObj.id = result[0]._id;
+                        getUserDataResolve(returnObj);
+                    }                    
+                  });               
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getUserDataResolve(null);
+            }             
+        });                
+    }    
+
+    _getLatestImageDetection = (timestamp) => {
+        return new Promise((getLatestImageDetectionResolve) => {
+            try {                
+                const query = {};
+             
+                if (timestamp) {
+                    query.date = {"$gt": new Date(Number(timestamp))};
+                }                
+
+                const selectFields = {
+                    "_id": 1,
+                    "image_url": 1,
+                    "user_id": 1,
+                    "date": 1,
+                    "detect_data": 1,
+                    "detect_type": 1,
+                    "detections": 1
+                };
+                
+                this.mongodbDetectionsCollection.find(query)
+                                                .project(selectFields)
+                                                .sort({date: -1})
+                                                .limit(1)
+                                                .toArray((err, result) => {
+                    if (err) {
+                        console.log(err);                       
+                    }
+                    
+                    if (err || !result || result.length === 0) {
+                        getLatestImageDetectionResolve(null);
+                    } else {                                            
+                        getLatestImageDetectionResolve(result[0]);
+                    }                    
+                  });               
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                getUserLoginResolve(null);
+            }             
+        });
+    }
+
+    async getLatestImage(timestamp) {          
+        
+        let latestImage = null;
+        
+        try {                        
+            const latestImageData = await this._getLatestImageDetection(timestamp);        
+            
+            if (!latestImageData || !latestImageData.user_id) {
+                throw "Not found";
+            }
+
+            const latestImageUserData = await this._getUserData(latestImageData.user_id); 
+
+            latestImage = latestImageData;
+            latestImage["user"] = latestImageUserData;
+        } 
+        catch(err) {            
+            latestImage = null;
+        }
+
+        return new Promise((getImageResolve) => {
+            getImageResolve(latestImage);         
+        });               
+    }    
+
+    increaseUserEntries(id, imageURL, detectData) {                       
         return new Promise((updateEntriesResolve) => {
             try {           
                 
@@ -176,7 +280,8 @@ export default class databaseMongoDBHandler {
                     const upsertDetectionUpdateObject = {
                         "$set": {
                             "date": new Date(),
-                            "detect_type": "face"                            
+                            "detect_type": "face",
+                            "detect_data": detectData                          
                         },
                         "$inc": {detections: 1}
                     };
