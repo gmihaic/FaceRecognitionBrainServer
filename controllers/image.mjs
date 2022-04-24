@@ -1,6 +1,6 @@
 export const imageController = {
     //recogniseImage/:imageURL --> GET = image parsed data
-    handleImageDetect: async (req, res, ClarifaiStub) => {
+    handleImageDetect: async (req, res, ClarifaiStub, grpc) => {
         const { imageURL } = req.body;
        
         if (!imageURL) {

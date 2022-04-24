@@ -37,7 +37,7 @@ app.post('/register', (req, res) => { userController.handleRegister(req, res, db
 app.post('/editprofile', (req, res) => { userController.handleEditProfile(req, res, db, bcrypt); } );
 
 //recogniseImage/:imageURL --> GET = image parsed data
-app.post('/recogniseImage', (req, res) => { imageController.handleImageDetect(req, res, ClarifaiStub); } );
+app.post('/recogniseImage', (req, res) => { imageController.handleImageDetect(req, res, ClarifaiStub, grpc); } );
 
 //latestimage/:timestamp/:user_id --> GET = latest image
 app.get('/latestimage/:timestamp?/:user_id?', (req, res) => { imageController.handleUserLatestImage(req, res, db); } );
