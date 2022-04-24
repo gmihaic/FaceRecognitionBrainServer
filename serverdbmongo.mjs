@@ -49,7 +49,7 @@ export default class databaseMongoDBHandler {
                 
                 this.mongodbCollection.find(query).project(selectFields).toArray((err, result) => {
                     if (err) {
-                        console.log(err);                        
+                        console.error(err);                        
                     }
                     
                     if (err || !result || result.length === 0) {
@@ -71,7 +71,7 @@ export default class databaseMongoDBHandler {
         });                    
     }
 
-    getUserById(id) {                        
+    getUserById(id, get_hash = false) {                        
         return new Promise((getUserByIdResolve) => {
             try {               
                 const query = {
@@ -86,10 +86,14 @@ export default class databaseMongoDBHandler {
                     "entries": 1,
                     "joined": 1
                 };
+
+                if (get_hash) {
+                    selectFields["hash"] = 1;
+                }
                 
                 this.mongodbCollection.find(query).project(selectFields).toArray((err, result) => {
                     if (err) {
-                        console.log(err);                        
+                        console.error(err);                        
                     }
                     
                     if (err || !result || result.length === 0) {
@@ -120,13 +124,14 @@ export default class databaseMongoDBHandler {
                     "name": 1,
                     "email": 1,
                     "hash": 1,
+                    "country": 1,
                     "entries": 1,
                     "joined": 1
                 };
                 
                 this.mongodbCollection.find(query).project(selectFields).toArray((err, result) => {
                     if (err) {
-                        console.log(err);                       
+                        console.error(err);                       
                     }
                     
                     if (err || !result || result.length === 0) {
@@ -163,7 +168,7 @@ export default class databaseMongoDBHandler {
                 
                 this.mongodbCollection.find(query).project(selectFields).toArray((err, result) => {
                     if (err) {
-                        console.log(err);                        
+                        console.error(err);                        
                     }
                     
                     if (err || !result || result.length === 0) {
@@ -211,7 +216,7 @@ export default class databaseMongoDBHandler {
                                                 .limit(1)
                                                 .toArray((err, result) => {
                     if (err) {
-                        console.log(err);                       
+                        console.error(err);                       
                     }
                     
                     if (err || !result || result.length === 0) {
@@ -274,7 +279,7 @@ export default class databaseMongoDBHandler {
                                                 .limit(Number(limit))
                                                 .toArray((err, result) => {
                     if (err) {
-                        console.log(err);                       
+                        console.error(err);                       
                     }
                     
                     if (err || !result || result.length === 0) {
@@ -326,7 +331,7 @@ export default class databaseMongoDBHandler {
                 //update the count for the user
                 this.mongodbCollection.findOneAndUpdate(updateConditions, updateObject, { returnDocument: "after" }, (err, result) => {
                     if (err) {
-                        console.log(err);
+                        console.error(err);
                         updateEntriesResolve(null);
                         return;
                     }
@@ -350,7 +355,7 @@ export default class databaseMongoDBHandler {
                               
                     this.mongodbDetectionsCollection.update(upsertDetectionConditionObject, upsertDetectionUpdateObject, {"upsert": true}, (err, result) => {
                         if (err) {
-                            console.log(err);
+                            console.error(err);
                             updateEntriesResolve(null);
                             return;
                         }                      
@@ -380,7 +385,7 @@ export default class databaseMongoDBHandler {
                                 
                 this.mongodbCollection.insertOne(insertObject, (err, result) => {
                     if (err) {
-                        console.log(err);
+                        console.error(err);
                         insertUserResolve(null);
                         return;
                     }
@@ -395,6 +400,38 @@ export default class databaseMongoDBHandler {
             catch(err) {
                 console.error("dbError", err);
                 insertUserResolve(null);
+            }             
+        }); 
+    }
+
+    updateUserProfile = (user_id, name, country, new_password) => {       
+        return new Promise((updateUserResolve) => {
+            try {                
+                const updateObject = {
+                    "$set": {
+                        name: name,
+                        country: country           
+                    }
+                };
+
+                if (new_password && new_password.length > 0) {
+                    updateObject["$set"].hash = new_password;
+                }
+                                
+                this.mongodbCollection.updateOne({"_id": ObjectId(user_id)}, updateObject, { returnDocument: "after" }, async (err, result) => {
+                    if (err) {
+                        console.error(err);
+                        updateUserResolve(null);
+                        return;
+                    }
+                                        
+                    const updatedUser = await this.getUserById(user_id, false);
+                    updateUserResolve(updatedUser);
+                });                       
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                updateUserResolve(null);
             }             
         }); 
     }

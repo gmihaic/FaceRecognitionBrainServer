@@ -38,7 +38,7 @@ export default class databaseSQLHandler {
                         }
                     })
                     .catch((err) => {
-                        console.error("getUserById", err);
+                        console.error("getAllUsers", err);
                         getUsersResolve(null);
                     });                   
             } 
@@ -49,19 +49,27 @@ export default class databaseSQLHandler {
         });                    
     }
 
-    getUserById(id) {                        
+    getUserById(id, get_hash = false) {                        
         return new Promise((getUserResolve) => {
             try {
                 //fetch from users table by id
                 this.postgres
-                    .select("*")
-                    .from("users")
-                    .where('id', '=', parseInt(id))                        
+                    .select("u.*", "l.hash")
+                    .from("users as u")
+                    .join("login as l", "u.email", "l.email")
+                    .where('u.id', '=', parseInt(id))                        
                     .then((response) => {                            
                         if (!response || response.length === 0) {
                             getUserResolve(null);
                         } else {
-                            getUserResolve(response[0]);
+
+                            const resp = response[0];
+
+                            if (!get_hash) {
+                                delete resp["hash"];
+                            }
+
+                            getUserResolve(resp);
                         }
                     })
                     .catch((err) => {
@@ -329,8 +337,7 @@ export default class databaseSQLHandler {
                             country: country,
                             joined: new Date()
                         })
-                        .then((insertUserResponse) => {
-                            //console.log("dbResponseInsertUser", insertUserResponse);
+                        .then((insertUserResponse) => {                            
 
                             //if insert succesful, insert into login table
                             trx('login')
@@ -363,6 +370,63 @@ export default class databaseSQLHandler {
             catch(err) {
                 console.error("dbError", err);
                 insertUserResolve(null);
+            }             
+        });                   
+    }
+
+    updateUserProfile = (user_id, name, country, new_password) => {       
+        return new Promise(async (updateUserResolve) => {
+            try {
+                //update users table
+
+                const updateObj = {                   
+                    name: name,
+                    country: country                   
+                };
+
+                let updateLoginConditions = {
+                    "email": "-1"
+                };
+
+                const updateLoginFields = {
+                    "hash": new_password
+                };
+
+                if (new_password && new_password.length > 0) {
+                    const userToUpdate = await this.getUserById(user_id, false);
+                    updateLoginConditions.email = userToUpdate.email;
+                }                
+
+                this.postgres.transaction((trx) => {
+                    trx('users')
+                        .returning("*")
+                        .update(updateObj)
+                        .where("id", "=", user_id)
+                        .then((updateUserResponse) => {                            
+                            trx('login')
+                            .returning("*")
+                            .update(updateLoginFields)
+                            .where(updateLoginConditions)
+                            .then((updateLoginResponse) => {
+                                trx.commit();
+                                updateUserResolve(updateUserResponse[0]);                                
+                            })
+                            .catch((err) => {
+                                console.error("dbUpdateProfileError", err);
+                                trx.rollback();
+                                updateUserResolve(null);
+                            })              
+                        })
+                        .catch((err) => {
+                            console.error("dbUpdateProfileError", err);
+                            trx.rollback();
+                            updateUserResolve(null);
+                        });
+                });                   
+            } 
+            catch(err) {
+                console.error("dbError", err);
+                updateUserResponse(null);
             }             
         });                   
     }

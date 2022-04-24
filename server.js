@@ -99,6 +99,65 @@ app.post('/register', async (req, res) => {
     res.json(insertedUser);    
 });
 
+//editprofile --> POST = user
+app.post('/editprofile', async (req, res) => {    
+    let {user_id, name, country, current_password, new_password} = req.body;
+
+    if (!user_id || user_id.length === 0 || !name || name.length === 0 || !country || country.length < 2) {
+        res.status(400).json({'error': 'invalid_params'});      
+        return;
+    }
+
+    if (current_password.length > 0 || new_password.length > 0) {
+        if (current_password.length < 8 || new_password.length < 8) {
+            errors.push("If changing the password, the new password must be at least 8 characters");
+        }
+    }
+
+    let currentUser = null;
+
+    try {
+        currentUser = await db.getUserById(user_id, true);
+        
+        if (!currentUser || !currentUser.email) {
+            throw "User not found";
+        }
+
+        if (current_password && current_password.length > 0) {
+            if (!bcrypt.compareSync(current_password, currentUser.hash)) {               
+                throw "Current password does not match";
+            }
+        }        
+    }
+    catch (err) {
+        console.error(err);
+        res.status(400).json({'error': 'could not update profile'});      
+        return; 
+    }
+               
+    if (new_password && new_password.length > 0) {
+        new_password = bcrypt.hashSync(new_password, bcrypt.genSaltSync(10));
+    }
+
+    let updatedUser = null;
+
+    try {        
+        updatedUser = await db.updateUserProfile(user_id, name, country, new_password);        
+    }
+    catch(err) {
+        console.error(err);
+        res.status(400).json({'error': 'db_error'});      
+        return;  
+    }
+
+    if (updatedUser === null) {
+        res.status(400).json({'error': 'profile_update_error'});  
+        return;  
+    }
+    
+    res.json(updatedUser);    
+});
+
 //profile/:userId --> GET = user
 app.get('/profile/:id', async (req, res) => {
     const { id } = req.params;

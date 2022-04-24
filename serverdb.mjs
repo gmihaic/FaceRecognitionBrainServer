@@ -24,8 +24,8 @@ export default class databaseHandler {
         return this.handler.getAllUsers();  
     }
 
-    getUserById(id) {        
-        return this.handler.getUserById(id);       
+    getUserById(id, get_hash = false) {        
+        return this.handler.getUserById(id, get_hash);       
     }
 
     getLatestImage(timestamp, user_id) {        
@@ -46,5 +46,9 @@ export default class databaseHandler {
    
     insertUser(email, name, hashed_password, country) {
         return this.handler.insertUser(email, name, hashed_password, country);   
-    }       
+    }  
+    
+    updateUserProfile(user_id, name, country, new_password) {
+        return this.handler.updateUserProfile(user_id, name, country, new_password);   
+    }
 };
