@@ -18,11 +18,9 @@ export default class databaseSQLHandler {
                 port: process.env.SQLDatabasePort,
                 user: process.env.SQLDatabaseUser,
                 password: process.env.SQLDatabasePass,
-                database: process.env.SQLDatabaseName
-            },
-            ssl: {
-            rejectUnauthorized: false
-            }
+                database: process.env.SQLDatabaseName,
+                ssl: true
+            }          
         });
     }
 
