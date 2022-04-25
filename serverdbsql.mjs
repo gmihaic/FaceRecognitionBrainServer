@@ -19,6 +19,9 @@ export default class databaseSQLHandler {
                 user: process.env.SQLDatabaseUser,
                 password: process.env.SQLDatabasePass,
                 database: process.env.SQLDatabaseName
+            },
+            ssl: {
+            rejectUnauthorized: false
             }
         });
     }
