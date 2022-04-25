@@ -1,27 +1,37 @@
 import knex from "knex";
 
 export default class databaseSQLHandler {
-    constructor(connectionSSL) {
+    constructor() {
         this.postgres = null;             
-        this.connect();
-        this.connectionSSL = connectionSSL;
+        this.connect();        
     }
 
     connect() {
-        if (!process?.env?.SQLDatabaseHost || !process?.env?.SQLDatabasePort || !process?.env?.SQLDatabaseUser || !process?.env?.SQLDatabasePass || !process?.env?.SQLDatabaseName) {
+        if ((!process?.env?.DATABASE_URL) && (!process?.env?.SQLDatabaseHost || !process?.env?.SQLDatabasePort || !process?.env?.SQLDatabaseUser || !process?.env?.SQLDatabasePass || !process?.env?.SQLDatabaseName)) {
             throw new Error("PostgreSQL config invalid");
         } 
 
-        this.postgres = knex({
-            client: 'pg',
-            connection: {
+        let connectionObj = null;
+
+        if (process?.env?.DATABASE_URL) {
+            connectionObj = {
+                connectionString: process.env.DATABASE_URL
+            }
+        } else {
+            connectionObj = {
                 host: process.env.SQLDatabaseHost,
                 port: process.env.SQLDatabasePort,
                 user: process.env.SQLDatabaseUser,
                 password: process.env.SQLDatabasePass,
                 database: process.env.SQLDatabaseName,
-                ssl: this.connectionSSL
-            }          
+            }
+        }
+
+        connectionObj.ssl = { rejectUnauthorized: false };
+
+        this.postgres = knex({
+            client: 'pg',
+            connection: connectionObj
         });
     }
 
