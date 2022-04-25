@@ -35,7 +35,7 @@ export const userController = {
 
         const {email, password} = req.body;
     
-        if (!email || email.length === 0 || !is_email_valid(email) || !password || password.length < 8>) {
+        if (!email || email.length === 0 || !is_email_valid(email) || !password || password.length < 8) {
             res.status(400).json({'error': 'invalid_params'});      
             return;
         }

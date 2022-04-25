@@ -45,7 +45,9 @@ app.get('/latestimage/:timestamp?/:user_id?', (req, res) => { imageController.ha
 //image --> PUT --> user
 app.put('/image', (req, res) => { imageController.handleUserImageIncrement(req, res, db); } );
 
-app.listen(process.env.serverPort, () => {
-    console.log(`app is running on port ${process.env.serverPort}`)
+const SERVERPORT = process.env.SERVERPORT;
+
+app.listen(SERVERPORT, () => {
+    console.log(`app is running on port ${SERVERPORT}`)
 });
 
