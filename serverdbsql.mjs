@@ -1,7 +1,7 @@
 import knex from "knex";
 
 export default class databaseSQLHandler {
-    constructor() {
+    constructor(connectionSSL) {
         this.postgres = null;             
         this.connect();
     }
@@ -19,7 +19,7 @@ export default class databaseSQLHandler {
                 user: process.env.SQLDatabaseUser,
                 password: process.env.SQLDatabasePass,
                 database: process.env.SQLDatabaseName,
-                ssl: true
+                ssl: connectionSSL
             }          
         });
     }

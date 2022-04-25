@@ -10,6 +10,8 @@ export default class databaseHandler {
 
     connect() {
 
+        let connectionSSL = { rejectUnauthorized: false };
+
         //postgres://aifbwyhawkbluv:89af05513792017733e4eed809234260bb434c2bc670f2d59df4617a202d2d28@ec2-3-209-124-113.compute-1.amazonaws.com:5432/dejfdjtb11k4v3
         if (process?.env?.DATABASE_URL) {
 
@@ -30,7 +32,9 @@ export default class databaseHandler {
             process.env.SQLDatabasePort = sqlSplitPorName[0];
             process.env.SQLDatabaseUser = sqlConnectionData[0];
             process.env.SQLDatabasePass = sqlSplitPassHost[0];
-            process.env.SQLDatabaseName = sqlSplitPorName[1];            
+            process.env.SQLDatabaseName = sqlSplitPorName[1];        
+            
+            connectionSSL = true;
         }      
 
         if (!process?.env?.databaseMode || (process.env.databaseMode !== "PostgreSQL" && process.env.databaseMode !== "MongoDB")) {
@@ -38,7 +42,7 @@ export default class databaseHandler {
         }
        
         if (process.env.databaseMode === "PostgreSQL") {
-            this.handler = new databaseSQLHandler();                                                    
+            this.handler = new databaseSQLHandler(connectionSSL);                                                    
         } else {
             this.handler = new databaseMongoDBHandler();  
         }
