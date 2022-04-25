@@ -45,7 +45,7 @@ app.get('/latestimage/:timestamp?/:user_id?', (req, res) => { imageController.ha
 //image --> PUT --> user
 app.put('/image', (req, res) => { imageController.handleUserImageIncrement(req, res, db); } );
 
-const SERVERPORT = process.env.SERVERPORT;
+const SERVERPORT = (process.env.PORT) ? process.env.PORT : process.env.SERVERPORT;
 
 app.listen(SERVERPORT, () => {
     console.log(`app is running on port ${SERVERPORT}`)
