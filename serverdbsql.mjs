@@ -4,6 +4,7 @@ export default class databaseSQLHandler {
     constructor(connectionSSL) {
         this.postgres = null;             
         this.connect();
+        this.connectionSSL = connectionSSL;
     }
 
     connect() {
@@ -19,7 +20,7 @@ export default class databaseSQLHandler {
                 user: process.env.SQLDatabaseUser,
                 password: process.env.SQLDatabasePass,
                 database: process.env.SQLDatabaseName,
-                ssl: connectionSSL
+                ssl: this.connectionSSL
             }          
         });
     }
