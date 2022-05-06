@@ -54,7 +54,7 @@ export const profileController = {
             return;  
         }
     
-        if (limit < 1 || limit > 12) {
+        if (limit < 1 || limit > 100) {
             res.status(400).json({'error': 'invalid_params'});       
             return;  
         }
@@ -76,14 +76,10 @@ export const profileController = {
         }
     
         const retImages = foundImages.map((foundImage) => {
-            if (typeof(foundImage.detect_data) === "string") {
-                foundImage.detect_data = JSON.parse(foundImage.detect_data);
-            }
     
             const retImage = {
                 "image_url": foundImage.image_url,
                 "date": foundImage.date,
-                "detect_data": foundImage.detect_data,
                 "detect_type": foundImage.detect_type,
                 "detections": foundImage.detections           
             };
