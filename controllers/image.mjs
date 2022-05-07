@@ -23,15 +23,12 @@ export const imageController = {
     }
 
     try {
-      const {
-        relativeBox: { x, y, width, height },
-        score,
-      } = await faceapi.detectSingleFace(
+      const { relativeBox, score } = await faceapi.detectSingleFace(
         image,
         new faceapi.TinyFaceDetectorOptions()
       );
       response = {
-        box: { x, y, width, height },
+        box: relativeBox,
         score,
       };
     } catch (err) {
@@ -55,7 +52,6 @@ export const imageController = {
     }
 
     res.json(response);
-    // res.json(updatedEntries);
   },
 
   handleImageCompare: async (req, res) => {
