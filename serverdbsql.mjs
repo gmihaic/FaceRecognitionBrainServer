@@ -202,7 +202,6 @@ export default class databaseSQLHandler {
                     .join("users as u", "idt.user_id", "u.id")
                     .where('idt.user_id', '=', user_id) //escaped by knex      
                     .select("idt.*", "u.*")
-                    .orderBy("detections", "desc")
                     .orderBy("date", "desc")
                     .limit(Number(limit));
                                                                                                    
