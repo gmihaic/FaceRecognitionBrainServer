@@ -23,13 +23,12 @@ export const imageController = {
     }
 
     try {
-      const { relativeBox, score } = await faceapi.detectSingleFace(
+      const detections = await faceapi.detectAllFaces(
         image,
         new faceapi.TinyFaceDetectorOptions()
       );
       response = {
-        box: relativeBox,
-        score,
+        boxes: detections.map((d) => d.relativeBox),
       };
     } catch (err) {
       res.status(500).json({ error: err.message });
