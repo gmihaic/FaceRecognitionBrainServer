@@ -15,7 +15,8 @@ export default class databaseSQLHandler {
 
         if (process?.env?.DATABASE_URL) {
             connectionObj = {
-                connectionString: process.env.DATABASE_URL
+                connectionString: process.env.DATABASE_URL,
+                ssl: process.env.DATABASE_URL ? true : false
             }
         } else {
             connectionObj = {
@@ -26,8 +27,6 @@ export default class databaseSQLHandler {
                 database: process.env.SQLDatabaseName,
             }
         }
-
-        connectionObj.ssl = { rejectUnauthorized: false };
 
         this.postgres = knex({
             client: 'pg',
@@ -203,7 +202,6 @@ export default class databaseSQLHandler {
                     .join("users as u", "idt.user_id", "u.id")
                     .where('idt.user_id', '=', user_id) //escaped by knex      
                     .select("idt.*", "u.*")
-                    .orderBy("detections", "desc")
                     .orderBy("date", "desc")
                     .limit(Number(limit));
                                                                                                    
@@ -246,7 +244,7 @@ export default class databaseSQLHandler {
         });                                 
     }    
 
-    increaseUserEntries(id, imageURL, detectData) {                       
+    increaseUserEntries(id, imageURL) {                       
         return new Promise((incrEntriesResolve) => {
             try {                              
                 //increase user entries
@@ -283,7 +281,7 @@ export default class databaseSQLHandler {
                                                 image_url: imageURL,
                                                 date: new Date(),
                                                 detect_type: "face",
-                                                detect_data: JSON.stringify(detectData),
+                                                detect_data: "",
                                                 detections: 1
                                             })
                                             .then((insertResponse) => {                                                
